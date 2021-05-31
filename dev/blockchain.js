@@ -1,3 +1,5 @@
+const sha256 = require('sha256');
+
 function Blockchain(){
     this.chain = [];
     this.pendingTransactions = [];
@@ -40,10 +42,28 @@ Blockchain.prototype.createNewTransaction = function(amount,sender,recipeint)
     return this.getLastBlock()['index'] + 1;
 }
 
-Blockchain.prototype.hashBlock = function(blockData)
+Blockchain.prototype.hashBlock = function(previusBlockHash, currentBlockData, nonce)
 {
-    
+    const dataasString = previusBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
+    const hash = sha256(dataasString);
 
+    return hash;
+}
+
+
+Blockchain.prototype.profOfWork = function(previusBlockHash,currentBlockData){
+    // busca que se genere un has que empiece por 0000
+
+    let nonce = 0;
+    let hash = this.hashBlock(previusBlockHash,currentBlockData, nonce);
+
+    while(hash.substring(0,4) !== '0000')
+    {
+        nonce++;
+        hash = this.hashBlock(previusBlockHash,currentBlockData, nonce);
+
+    }
+    return nonce;
 }
 
 module.exports = Blockchain;
