@@ -1,9 +1,8 @@
-
-const { json } = require('body-parser');
 const express = require('express')
 const app = express();
 const Blockchain = require('./blockchain')
 const uuid = require('uuid');
+const rp   = require('request-promise');
 
 
 const port = process.argv[2];
@@ -55,8 +54,76 @@ app.get('/mine',function(req,res){
 
 });
 
+app.post('/register-broadcast-node',function(req,res){
+
+    const newNodeUrl = req.body.newUrl;
+    const registerPromeses = [];
+
+
+    if(bitcoin.networkNodes.indexOf(newNodeUrl) == -1)
+      {
+        bitcoin.networkNodes.push(newNodeUrl);
+      }  
+
+        bitcoin.networkNodes.forEach(networkNodes => {
+            const requestOptions = {
+                uri: networkNodes + "/registerNode",
+                method:"POST",
+                body:{ newNodeUrl:newNodeUrl} ,
+                json:true
+
+            };
+            registerPromeses.push( rp(requestOptions) );
+
+        });
+
+        Promise.all(registerPromeses).then(data=> {
+
+            const bulkRegisterOptions = {
+                uri: newNodeUrl +"/registerNodesBulk",
+                method:"POST",
+                body : {allNetworkNode : [...bitcoin.networkNodes, bitcoin.currentNodeUrl]},
+                json :true
+
+            }
+            return  rp(bulkRegisterOptions)
+        })
+        .then(data => {
+
+            res.json({note:"New node register OK!"});
+        });
+});
+
+app.post('/registerNode',function(req,res){
+    const newnetworkNodes = req.body.newNodeUrl;
+    
+    if(bitcoin.networkNodes.indexOf(newnetworkNodes) == -1 && bitcoin.currentNodeUrl !== newnetworkNodes)
+      {
+        bitcoin.networkNodes.push(newnetworkNodes);
+      }  
+    
+
+    res.json({note:"New node register successfully"});
+
+});
+
+app.post('/registerNodesBulk',function(req,res){
+    const newnallNetworkNodes = req.body.allNetworkNode;
+
+    newnallNetworkNodes.forEach(networkNodesUrl => {
+
+        if(bitcoin.networkNodes.indexOf(networkNodesUrl) == -1 && bitcoin.currentNodeUrl !== networkNodesUrl)
+        {
+            bitcoin.networkNodes.push(networkNodesUrl);
+        }
+       
+    })
+
+    res.json({note:'Bulk registration OK!'});
+
+});
 
 
 app.listen(port,function(){
-    console.log(`Listening on port check ${port}.....`);
+    console.log(`Listening on port check ${port}....`);
 })
