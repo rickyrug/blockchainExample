@@ -2,13 +2,21 @@
   "name": "blockchain",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "api.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "node1": "nodemon --watch dev -e js dev/NetworkNode.js 81",
+    "node2": "nodemon --watch dev -e js dev/NetworkNode.js 82",
+    "node3": "nodemon --watch dev -e js dev/NetworkNode.js 83"
+
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "sha256": "^0.2.0"
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.7",
+    "sha256": "^0.2.0",
+    "uuid": "^8.3.2"
   }
 }
